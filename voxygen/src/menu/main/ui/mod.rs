@@ -43,6 +43,7 @@ image_ids_ice! {
     struct Imgs {
         <ImageGraphic>
         v_logo: "voxygen.element.v_logo",
+        logo: "voxygen.element.logo",
         bg: "voxygen.background.bg_main",
         banner_top: "voxygen.element.ui.generic.frames.banner_top",
         banner_gradient_bottom: "voxygen.element.ui.generic.frames.banner_gradient_bottom",
@@ -300,7 +301,7 @@ impl Controls {
         settings: &Settings,
         server: Option<String>,
     ) -> Self {
-        let version = format!("Veloren {}", *common::util::DISPLAY_VERSION);
+        let version = format!("WILDRAFT {}", *common::util::DISPLAY_VERSION);
 
         let credits = Ron::<Credits>::load_expect_cloned("credits").into_inner();
 
@@ -373,6 +374,7 @@ impl Controls {
             .size(self.fonts.cyri.scale(12))
             .width(Length::Fill)
             .horizontal_alignment(HorizontalAlignment::Center);
+        // WILDRAFT branding preserved; technical version kept
 
         let top_text = Row::with_children(vec![
             Space::new(Length::Fill, Length::Shrink).into(),

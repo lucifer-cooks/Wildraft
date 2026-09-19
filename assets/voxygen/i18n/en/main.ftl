@@ -4,6 +4,15 @@ main-password = Password
 main-connecting = Connecting
 main-creating_world = Creating world
 main-tip = Tip:
+wildraft-title = WILDRAFT
+wildraft-subtitle = SURVIVE THE UNKNOWN
+wildraft-play_demo = PLAY DEMO
+wildraft-settings = SETTINGS
+wildraft-credits = CREDITS
+wildraft-quit = QUIT
+wildraft-demo_time = DEMO • 30‑45 MINUTES
+wildraft-wishlist_target = HELP US REACH 20,000 WISHLISTS
+wildraft-ok = OKAY
 main-unbound_key_tip = unbound
 main-notice =
     Welcome to the alpha version of Veloren!

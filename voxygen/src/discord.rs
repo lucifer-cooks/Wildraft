@@ -13,9 +13,9 @@ use tracing::{debug, info, warn};
 
 /// Discord app id
 ///
-/// **Note:** currently a private app created for testing purposes, can be
-/// shared to a team or replaced entirely later on
-const DISCORD_APP_ID: ds::AppId = 1006661232465563698;
+/// **Note:** WILDRAFT Discord application ID - replace with your own
+/// when creating a Discord Developer Portal application for WILDRAFT
+const DISCORD_APP_ID: ds::AppId = 938848725256777740;
 
 /// Discord presence update command
 #[derive(Debug, Clone)]
@@ -49,7 +49,7 @@ impl ActivityUpdate {
     /// Rich Presence character screen asset key
     const CHARACTER_SCREEN_ASSET: &'static str = "character_screen";
     /// Rich Presence logo asset key
-    const LOGO_ASSET: &'static str = "logo";
+    const LOGO_ASSET: &'static str = "wildraft_logo_v2";
 
     /// Edit the current activity args according to the command in `self`.
     ///

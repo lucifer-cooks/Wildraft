@@ -14,8 +14,8 @@ use crate::ui::{
 
 use i18n::{LanguageMetadata, Localization};
 use iced::{
-    Align, Button, Column, Container, Length, Row, Scrollable, Space, Text, TextInput, button,
-    scrollable, text_input,
+    Align, Button, Column, Container, Length, Row, Scrollable, Space, Text, TextInput,
+    button, scrollable, text_input,
 };
 use vek::*;
 
@@ -52,94 +52,90 @@ impl Screen {
         button_style: style::button::Style,
     ) -> Element<'_, Message> {
         let mut buttons = Vec::new();
-        // If the server field is locked, we don't want to show the server selection
-        // list!
-        if !server_field_locked {
-            buttons.push(neat_button(
+
+        // PLAY DEMO button (primary action — stronger visual weight)
+        buttons.push(
+            Container::new(neat_button(
                 &mut self.servers_button,
-                i18n.get_msg("common-servers"),
+                i18n.get_msg("wildraft-play_demo"),
                 FILL_FRAC_ONE,
                 button_style,
-                Some(Message::ShowServers),
+                Some(Message::Singleplayer),
             ))
-        }
-        buttons.extend([
-            // neat_button(
-            //     &mut self.settings_button,
-            //     i18n.get_msg("common-settings"),
-            //     FILL_FRAC_ONE,
-            //     button_style,
-            //     None,
-            // ),
-            neat_button(
-                &mut self.language_select_button,
-                i18n.get_msg("common-languages"),
-                FILL_FRAC_ONE,
-                button_style,
-                Some(Message::OpenLanguageMenu),
-            ),
-            neat_button(
+            .width(Length::Units(260))
+            .padding(4)
+            .into(),
+        );
+
+        // CREDITS button (secondary — restrained)
+        buttons.push(
+            Container::new(neat_button(
                 &mut self.credits_button,
-                i18n.get_msg("main-credits"),
+                i18n.get_msg("wildraft-credits"),
                 FILL_FRAC_ONE,
                 button_style,
                 Some(Message::ShowCredits),
-            ),
-            neat_button(
+            ))
+            .width(Length::Units(260))
+            .padding(4)
+            .into(),
+        );
+
+        // QUIT button (secondary — restrained)
+        buttons.push(
+            Container::new(neat_button(
                 &mut self.quit_button,
-                i18n.get_msg("common-quit"),
+                i18n.get_msg("wildraft-quit"),
                 FILL_FRAC_ONE,
                 button_style,
                 Some(Message::Quit),
-            ),
-        ]);
+            ))
+            .width(Length::Units(260))
+            .padding(4)
+            .into(),
+        );
 
         let buttons = Container::new(
             Column::with_children(buttons)
                 .width(Length::Fill)
-                .max_width(100)
-                .spacing(5),
+                .max_width(280)
+                .spacing(8),
         )
         .width(Length::Fill)
         .height(Length::Fill)
-        .align_y(Align::End);
+        .align_y(Align::Center);
 
-        let intro_text = i18n.get_msg("main-login_process");
+        // WILDRAFT branding — logo directly above buttons, left-aligned
+        let logo_section = Column::with_children(vec![
+            // Logo at top — real image, enlarged, aspect preserved
+            Image::new(imgs.logo)
+                .width(Length::Units(300)) // Increased size to 300px
+                .fix_aspect_ratio()
+                .into(),
+            Space::new(Length::Fill, Length::Units(12)).into(),
+        ])
+        .width(Length::Fill)
+        .max_width(460);
 
-        let info_window = BackgroundContainer::new(
-            CompoundGraphic::from_graphics(vec![
-                Graphic::rect(Rgba::new(0, 0, 0, 240), [500, 300], [0, 0]),
-                // Note: a way to tell it to keep the height of this one piece constant and
-                // unstreched would be nice, I suppose we could just break this out into a
-                // column and use Length::Units
-                Graphic::image(imgs.banner_gradient_bottom, [500, 50], [0, 300])
-                    .color(Rgba::new(0, 0, 0, 240)),
-            ])
-            .height(Length::Shrink),
-            Text::new(intro_text).size(fonts.cyri.scale(18)),
-        )
-        .max_width(360)
-        .padding(Padding::new().horizontal(20).top(10).bottom(60));
-
-        let left_column = Column::with_children(vec![info_window.into(), buttons.into()])
+        let left_column = Column::with_children(vec![logo_section.into(), buttons.into()])
             .width(Length::Fill)
             .height(Length::Fill)
-            .padding(27)
+            .padding(30)
             .into();
 
-        let central_content = if let Some(error) = error {
+        let central_content: Element<'_, Message> = if let Some(error) = error {
             Container::new(
                 Column::with_children(vec![
                     Container::new(Text::new(error)).height(Length::Fill).into(),
                     Container::new(neat_button(
                         &mut self.error_okay_button,
-                        i18n.get_msg("common-okay"),
+                        i18n.get_msg("wildraft-ok"),
                         FILL_FRAC_ONE,
                         button_style,
                         Some(Message::CloseError),
                     ))
-                    .width(Length::Fill)
-                    .height(Length::Units(30))
+                    .width(Length::Units(200))
+                    .height(Length::Units(40))
                     .center_x()
                     .into(),
                 ])
@@ -148,34 +144,18 @@ impl Screen {
             )
             .style(
                 style::container::Style::color_with_double_cornerless_border(
-                    (22, 18, 16, 255).into(),
-                    (11, 11, 11, 255).into(),
-                    (54, 46, 38, 255).into(),
+                    (15, 25, 35, 255).into(),
+                    (8, 15, 25, 255).into(),
+                    (30, 45, 55, 255).into(),
                 ),
             )
-            .width(Length::Units(400))
-            .height(Length::Units(180))
-            .padding(20)
+            .width(Length::Units(420))
+            .height(Length::Units(200))
+            .padding(25)
             .into()
         } else {
-            match show {
-                Showing::Login => self.banner.view(
-                    fonts,
-                    imgs,
-                    server_field_locked,
-                    login_info,
-                    i18n,
-                    button_style,
-                ),
-                Showing::Languages => self.language_selection.view(
-                    fonts,
-                    imgs,
-                    i18n,
-                    language_metadatas,
-                    selected_language_index,
-                    button_style,
-                ),
-            }
+            // WILDRAFT demo landing: clean menu, no login banner visible
+            Container::new(Space::new(Length::Fill, Length::Fill)).into()
         };
 
         let central_column = Container::new(central_content)
@@ -184,20 +164,27 @@ impl Screen {
             .center_x()
             .center_y();
 
-        let v_logo = Container::new(Image::new(imgs.v_logo).fix_aspect_ratio())
-            .padding(3)
-            .width(Length::Units(230));
+        // Get demo info text for right side
+        let demo_time = i18n.get_msg("wildraft-demo_time");
 
-        let version_stage =
-            Text::new(common::util::VELOREN_VERSION_STAGE).size(fonts.cyri.scale(22));
-
+        // Right column: Steam icon placeholder + demo info
         let right_column = Container::new(
-            Column::with_children(vec![v_logo.into(), version_stage.into()])
-                .align_items(Align::Center),
+            Column::with_children(vec![
+                // Placeholder for Steam icon (to be replaced with actual asset)
+                Container::new(Space::new(Length::Units(40), Length::Units(40)))
+                    .width(Length::Units(40))
+                    .height(Length::Units(40))
+                    .into(),
+                Text::new(demo_time)
+                    .size(24) // Noticeably larger
+                    .into(),
+            ])
+            .spacing(12)
+            .align_items(Align::Center),
         )
         .width(Length::Fill)
         .height(Length::Fill)
-        .align_x(Align::End);
+        .center_y();
 
         Row::with_children(vec![
             left_column,
@@ -206,7 +193,7 @@ impl Screen {
         ])
         .width(Length::Fill)
         .height(Length::Fill)
-        .spacing(10)
+        .spacing(20)
         .into()
     }
 }
@@ -431,12 +418,11 @@ impl LoginBanner {
             ])
             .spacing(5)
             .into(),
-            Space::new(Length::Fill, Length::Units(8)).into(),
             Column::with_children(vec![
                 neat_button(
                     &mut self.multiplayer_button,
                     i18n.get_msg("common-multiplayer"),
-                    FILL_FRAC_TWO,
+                    FILL_FRAC_ONE,
                     button_style,
                     Some(Message::Multiplayer),
                 ),
@@ -444,7 +430,7 @@ impl LoginBanner {
                 neat_button(
                     &mut self.singleplayer_button,
                     i18n.get_msg("common-singleplayer"),
-                    FILL_FRAC_TWO,
+                    FILL_FRAC_ONE,
                     button_style,
                     Some(Message::Singleplayer),
                 ),
@@ -463,3 +449,8 @@ impl LoginBanner {
             .into()
     }
 }
+// Steam asset check result: NO existing Steam logo in checkout
+// (assets/voxygen/element/ lacks it). Right-side promo laid out transparent;
+// Steam slot reserved — asset required before insertion.
+
+// Co-Authored-By: Claude Code <noreply@anthropic.com>
