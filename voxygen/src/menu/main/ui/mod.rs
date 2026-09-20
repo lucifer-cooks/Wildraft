@@ -14,13 +14,21 @@ use crate::{
     ui::{
         self, Graphic,
         fonts::IcedFonts as Fonts,
-        ice::{Element, IcedUi as Ui, load_font, style, widget},
+        ice::{
+            Element, IcedUi as Ui,
+            component::neat_button,
+            load_font, style,
+            widget::{self, Overlay},
+        },
         img_ids::ImageGraphic,
     },
     window,
 };
 use i18n::{LanguageMetadata, LocalizationHandle};
-use iced::{Column, Container, HorizontalAlignment, Length, Row, Space, text_input};
+use iced::{
+    Align, Button, Column, Container, HorizontalAlignment, Length, Row, Space, Text, button,
+    button::State as ButtonState, text_input,
+};
 //ImageFrame, Tooltip,
 use crate::settings::Settings;
 use common::assets::{AssetExt, Image, Ron};
@@ -216,6 +224,12 @@ enum Screen {
     WorldSelector {
         screen: world_selector::Screen,
     },
+    #[cfg(feature = "singleplayer")]
+    WishlistPopup {
+        show_wishlist: bool,
+        sure_button: button::State,
+        done_button: button::State,
+    },
 }
 
 #[derive(PartialEq, Eq)]
@@ -274,6 +288,8 @@ enum Message {
     WorldCancelConfirmation,
     #[cfg(feature = "singleplayer")]
     WorldConfirmation(world_selector::Confirmation),
+    WishlistPopupSure,
+    WishlistPopupDone,
     Multiplayer,
     UnlockServerField,
     LanguageChanged(usize),
@@ -436,6 +452,75 @@ impl Controls {
                 &settings.controls,
             ),
             #[cfg(feature = "singleplayer")]
+            Screen::WishlistPopup {
+                sure_button,
+                done_button,
+                ..
+            } => {
+                let text = Text::new(
+                    "WISHLIST WILDRAFT ON STEAM
+
+\"Enjoying what you see?
+Wishlist WILDRAFT on Steam and help support the game.\"",
+                )
+                .horizontal_alignment(iced::HorizontalAlignment::Center)
+                .size(22);
+                let over_content = Column::with_children(vec![
+                    text.into(),
+                    Space::new(Length::Units(20), Length::Units(10)).into(),
+                    Row::with_children(vec![
+                        Container::new(neat_button(
+                            sure_button,
+                            "SURE",
+                            FILL_FRAC_ONE,
+                            button_style,
+                            Some(Message::WishlistPopupSure),
+                        ))
+                        .into(),
+                        Space::new(Length::Units(10), Length::Units(0)).into(),
+                        Container::new(neat_button(
+                            done_button,
+                            "DONE",
+                            FILL_FRAC_ONE,
+                            button_style,
+                            Some(Message::WishlistPopupDone),
+                        ))
+                        .into(),
+                    ])
+                    .spacing(30)
+                    .into(),
+                ])
+                .align_items(Align::Center)
+                .spacing(10);
+
+                let over = Container::new(over_content)
+                    .style(
+                        style::container::Style::color_with_double_cornerless_border(
+                            (0, 0, 0, 200).into(),
+                            (3, 4, 4, 255).into(),
+                            (28, 28, 22, 255).into(),
+                        ),
+                    )
+                    .width(Length::Shrink)
+                    .height(Length::Shrink)
+                    .max_width(400)
+                    .max_height(500)
+                    .padding(24)
+                    .center_x()
+                    .center_y();
+
+                let bg = Container::new(Space::new(Length::Fill, Length::Fill))
+                    .width(Length::Fill)
+                    .height(Length::Fill);
+
+                Overlay::new(over, bg)
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .center_x()
+                    .center_y()
+                    .into()
+            },
+            #[cfg(feature = "singleplayer")]
             Screen::WorldSelector { screen } => screen.view(
                 &self.fonts,
                 &self.imgs,
@@ -489,10 +574,11 @@ impl Controls {
             },
             #[cfg(feature = "singleplayer")]
             Message::Singleplayer => {
-                self.screen = Screen::WorldSelector {
-                    screen: world_selector::Screen::default(),
+                self.screen = Screen::WishlistPopup {
+                    show_wishlist: true,
+                    sure_button: button::State::default(),
+                    done_button: button::State::default(),
                 };
-                events.push(Event::InitSingleplayer);
             },
             #[cfg(feature = "singleplayer")]
             Message::SingleplayerPlay => {
@@ -568,6 +654,21 @@ impl Controls {
                     screen.banner.password = text_input::State::focused();
                     screen.banner.username = text_input::State::new();
                 }
+            },
+            Message::WishlistPopupSure => {
+                // Open Steam wishlist URL
+                let url = "https://store.steampowered.com/app/123456/Wildraft";
+                let _ = std::process::Command::new("cmd")
+                    .args(["/c", "start", "", url])
+                    .spawn();
+                events.push(Event::Quit);
+            },
+            Message::WishlistPopupDone => {
+                // Continue to demo / close popup
+                self.screen = Screen::Login {
+                    screen: Box::default(),
+                    error: None,
+                };
             },
             Message::CancelConnect => {
                 self.exit_connect_screen();

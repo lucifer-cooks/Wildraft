@@ -18,6 +18,7 @@ pub mod gizmos;
 pub mod group;
 mod hardcore;
 mod health;
+mod hunger;
 mod inputs;
 pub mod inventory;
 pub mod invite;
@@ -38,6 +39,7 @@ pub mod shockwave;
 pub mod skillset;
 mod stats;
 pub mod teleport;
+mod thirst;
 pub mod visual;
 
 // Reexports
@@ -78,6 +80,7 @@ pub use self::{
     gizmos::GizmoSubscriber,
     group::Group,
     hardcore::Hardcore,
+    hunger::Hunger,
     inputs::CanBuild,
     inventory::{
         CollectFailedReason, Inventory, InventoryUpdateBuffer, InventoryUpdateEvent,
@@ -112,6 +115,7 @@ pub use self::{
     },
     stats::{Stats, StatsModifier},
     teleport::Teleporting,
+    thirst::Thirst,
     visual::{FrontendMarker, LightAnimation, LightEmitter},
 };
 pub use common_i18n::{Content, LocalizationArg};

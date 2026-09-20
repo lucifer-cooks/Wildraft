@@ -73,7 +73,6 @@ wildraft-settings = EINSTELLUNGEN
 wildraft-credits = QUELLENANGABEN
 wildraft-quit = BEENDEN
 wildraft-demo_time = DEMO • 30‑45 MINUTEN
-wildraft-wishlist_target = HELFEN SIE UNS, 20.000 WISHLISTS ZU ERREICHEN
 wildraft-ok = OKAY
 main-servers-select_server = Wähle einen Server
 loading-tips =

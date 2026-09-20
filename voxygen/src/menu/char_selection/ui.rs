@@ -230,7 +230,6 @@ impl Mode {
         let offhand = None;
 
         let loadout = LoadoutBuilder::empty()
-            .defaults()
             .active_mainhand(mainhand.map(Item::new_from_asset_expect))
             .active_offhand(offhand.map(Item::new_from_asset_expect))
             .build();
@@ -1473,60 +1472,9 @@ impl Controls {
                         map_img.into()
                     };
 
-                    if self.possible_starting_sites.is_empty() {
-                        vec![map]
-                    } else {
-                        let selected = start_site_idx.get_or_insert_with(|| {
-                            rng().random_range(0..self.possible_starting_sites.len())
-                        });
-
-                        let site_slider = starter_slider(
-                            i18n.get_msg("char_selection-starting_site").into_owned(),
-                            30,
-                            &mut sliders.starting_site,
-                            self.possible_starting_sites.len() as u32 - 1,
-                            *selected as u32,
-                            |x| Message::StartingSite(x as usize),
-                            imgs,
-                        );
-                        let site_buttons = Row::with_children(vec![
-                            neat_button(
-                                prev_starting_site_button,
-                                i18n.get_msg("char_selection-starting_site_prev")
-                                    .into_owned(),
-                                FILL_FRAC_ONE,
-                                button_style,
-                                Some(Message::PrevStartingSite),
-                            ),
-                            neat_button(
-                                next_starting_site_button,
-                                i18n.get_msg("char_selection-starting_site_next")
-                                    .into_owned(),
-                                FILL_FRAC_ONE,
-                                button_style,
-                                Some(Message::NextStartingSite),
-                            ),
-                        ])
-                        .max_height(60)
-                        .padding(15)
-                        .into();
-                        // Todo: use this to change the site icon if we use different starting site
-                        // types
-                        /* let site_kind = Text::new(i18n
-                            .get_msg_ctx("char_selection-starting_site_kind", &i18n::fluent_args! {
-                                "kind" => match self.possible_starting_sites[*start_site_idx].kind {
-                                    SiteKind::Town => i18n.get_msg("hud-map-town").into_owned(),
-                                    SiteKind::Castle => i18n.get_msg("hud-map-castle").into_owned(),
-                                    SiteKind::Bridge => i18n.get_msg("hud-map-bridge").into_owned(),
-                                    _ => "Unknown".to_string(),
-                                },
-                            })
-                            .into_owned())
-                        .size(fonts.cyri.scale(SLIDER_TEXT_SIZE))
-                        .into(); */
-
-                        vec![site_slider, map, site_buttons]
-                    }
+                    // Bypassed: no player-facing selection; server uses settlement-nearest + seed
+                    // 42
+                    vec![map]
                 } else {
                     // If we're editing an existing character, don't display the world column
                     Vec::new()
@@ -1879,10 +1827,8 @@ impl Controls {
                         offhand: offhand.map(String::from),
                         body: comp::Body::Humanoid(*body),
                         hardcore: *hardcore_enabled,
-                        start_site: self
-                            .possible_starting_sites
-                            .get(start_site_idx.unwrap_or_default())
-                            .and_then(|info| info.site),
+                        start_site: None, /* AUTO: server settlement-nearest spawn (seed 42
+                                           * preserved) */
                     });
                     self.mode = Mode::select(Some(InfoContent::CreatingCharacter));
                 }

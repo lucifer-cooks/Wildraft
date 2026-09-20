@@ -304,7 +304,7 @@ impl Settings {
             world_seed: if load.map_file.is_some() {
                 load.world_seed
             } else {
-                DEFAULT_WORLD_SEED
+                42 // deterministic demo seed for reproducible starting area
             },
             server_name: SINGLEPLAYER_SERVER_NAME.to_owned(),
             max_players: 100,

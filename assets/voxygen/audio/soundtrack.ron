@@ -202,6 +202,19 @@
             artist: ("Oolnokk", "https://soundcloud.com/walkerhallplaysthegeetar"),
         )),
         Individual((
+            title: "WILDRAFT Jungle Theme",
+            path: "voxygen.audio.soundtrack.overworld.wildraft_jungle_theme",
+            length: 105.0,
+            timing: None,
+            weather: None,
+            biomes: [
+                (Jungle, 1),
+            ],
+            sites: [Void],
+            music_state: Activity(Explore),
+            artist: ("WILDRAFT", None),
+        )),
+        Individual((
             title: "Moonlit Canopy",
             path: "voxygen.audio.soundtrack.overworld.moonlit_canopy",
             length: 170.0,

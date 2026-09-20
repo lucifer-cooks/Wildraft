@@ -667,6 +667,7 @@ pub struct HudInfo<'a> {
     pub selected_entity: Option<(specs::Entity, Instant)>,
     pub persistence_load_error: Option<SkillsPersistenceError>,
     pub key_state: &'a KeyState,
+    pub demo_timer_remaining: Option<std::time::Duration>,
 }
 
 #[derive(Clone)]
@@ -1522,7 +1523,7 @@ impl Hud {
         self.pulse += dt.as_secs_f32();
         // FPS
         let fps = global_state.clock.stats().average_tps;
-        let version = format!("Veloren {}", *common::util::DISPLAY_VERSION);
+        let version = format!("WILDRAFT {}", *common::util::DISPLAY_VERSION);
         let i18n = &global_state.i18n.read();
 
         if self.show.ingame {
@@ -1617,13 +1618,34 @@ impl Hud {
                         .set(self.ids.hurt_bg, ui_widgets);
                 }
 
-                // Version info
-                Text::new(&version)
-                    .font_id(self.fonts.cyri.conrod_id)
-                    .font_size(self.fonts.cyri.scale(11))
-                    .color(TEXT_COLOR)
-                    .mid_top_with_margin_on(ui_widgets.window, 2.0)
-                    .set(self.ids.version, ui_widgets);
+                // WILDRAFT demo timer — visible countdown in gameplay HUD
+                // Calculate from session timer; since session tick updates it, we pull
+                // directly. To access session timer, add it to HudInfo in
+                // session/mod.rs tick call. Minimal fix: draw timer text based
+                // on demo_timer_display if we store it. We store it in self via
+                // a simple field added to Hud. For minimal edit without
+                // restructuring, we draw conditional text using session's timer
+                // that is updated in session tick and made available
+                // through a new HudInfo field (added below in session/mod tick).
+                if let Some(remaining) = info.demo_timer_remaining {
+                    let mins = (remaining.as_secs() / 60) % 60;
+                    let secs = remaining.as_secs() % 60;
+                    let timer_text = format!("DEMO {:02}:{:02}", mins, secs);
+                    Text::new(&timer_text)
+                        .font_id(self.fonts.cyri.conrod_id)
+                        .font_size(self.fonts.cyri.scale(14))
+                        .color(Color::Rgba(1.0, 0.8, 0.6, 1.0))
+                        .bottom_left_with_margins_on(ui_widgets.window, 10.0, 10.0)
+                        .set(self.ids.version, ui_widgets); // reuse widget id for visibility
+                } else {
+                    // Version info shown when timer not active
+                    Text::new(&version)
+                        .font_id(self.fonts.cyri.conrod_id)
+                        .font_size(self.fonts.cyri.scale(11))
+                        .color(TEXT_COLOR)
+                        .mid_top_with_margin_on(ui_widgets.window, 2.0)
+                        .set(self.ids.version, ui_widgets);
+                }
 
                 // Death Frame
                 if health.is_dead {

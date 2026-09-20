@@ -14,8 +14,8 @@ use crate::ui::{
 
 use i18n::{LanguageMetadata, Localization};
 use iced::{
-    Align, Button, Column, Container, Length, Row, Scrollable, Space, Text, TextInput,
-    button, scrollable, text_input,
+    Align, Button, Column, Container, Length, Row, Scrollable, Space, Text, TextInput, button,
+    scrollable, text_input,
 };
 use vek::*;
 

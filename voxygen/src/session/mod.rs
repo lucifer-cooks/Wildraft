@@ -124,6 +124,9 @@ pub struct SessionState {
     lines: PlayerDebugLines,
     tracks: HashMap<Vec2<i32>, Vec<DebugShapeId>>,
     gizmos: Vec<(DebugShapeId, common::resources::Time, bool)>,
+    demo_timer_start: Option<std::time::Instant>,
+    demo_ended: bool,
+    demo_timer_display: Option<std::time::Duration>,
 }
 
 /// Represents an active game session (i.e., the one being played).
@@ -200,6 +203,9 @@ impl SessionState {
             tracks: HashMap::new(),
             lines: Default::default(),
             gizmos: Vec::new(),
+            demo_timer_start: None,
+            demo_ended: false,
+            demo_timer_display: None,
         }
     }
 
@@ -560,6 +566,11 @@ impl PlayState for SessionState {
             for cmd in &global_state.settings.logon_commands {
                 self.client.borrow_mut().send_chat(cmd.to_string());
             }
+        }
+
+        // Start demo timer when entering world (not during character creation)
+        if self.demo_timer_start.is_none() && !self.demo_ended {
+            self.demo_timer_start = Some(std::time::Instant::now());
         }
 
         #[cfg(feature = "discord")]
@@ -1619,6 +1630,21 @@ impl PlayState for SessionState {
 
             let mut outcomes = Vec::new();
 
+            // Demo timer: 30 minutes of unpaused gameplay; show remaining time in HUD
+            if self.demo_timer_start.is_some() && !self.demo_ended && !global_state.paused() {
+                let elapsed = std::time::Instant::now()
+                    .duration_since(self.demo_timer_start.unwrap())
+                    .as_secs_f32();
+                let remaining = (30.0 * 60.0 - elapsed).max(0.0);
+                self.demo_timer_display = Some(std::time::Duration::from_secs_f32(remaining));
+                if elapsed >= 30.0 * 60.0 {
+                    self.demo_ended = true;
+                    self.demo_timer_display = Some(std::time::Duration::from_secs_f32(0.0));
+                    global_state.info_message =
+                        Some("WILDRAFT DEMO COMPLETE — 30 minutes played.".into());
+                }
+            }
+
             // Runs if either in a multiplayer server or the singleplayer server is unpaused
             if !global_state.paused() {
                 // Perform an in-game tick.
@@ -1739,6 +1765,7 @@ impl PlayState for SessionState {
                     selected_entity: self.selected_entity,
                     persistence_load_error: self.metadata.skill_set_persistence_load_error,
                     key_state: &self.key_state,
+                    demo_timer_remaining: self.demo_timer_display,
                 },
                 inverted_interactable_map,
             );

@@ -64,6 +64,7 @@ pub struct State {
     last_info_update: Instant,
     last_message_update: Instant,
     last_region_name: Option<String>,
+    opening_title_shown: bool,
 }
 
 impl Widget for Popup<'_> {
@@ -81,6 +82,7 @@ impl Widget for Popup<'_> {
             last_info_update: Instant::now(),
             last_message_update: Instant::now(),
             last_region_name: None,
+            opening_title_shown: false,
         }
     }
 
@@ -98,6 +100,16 @@ impl Widget for Popup<'_> {
         let error_color = |fade| Color::Rgba(1.0, 0.0, 0.0, fade);
         let info_color = |fade| Color::Rgba(1.0, 1.0, 0.0, fade);
         let message_color = |fade| Color::Rgba(1.0, 1.0, 1.0, fade);
+
+        // Opening title — shown once via same centered message presentation
+        if !state.opening_title_shown {
+            state.update(|s| {
+                s.opening_title_shown = true;
+                s.messages
+                    .push_back("WILDRAFT\nSURVIVE THE UNKNOWN".to_owned());
+                s.last_message_update = Instant::now();
+            });
+        }
 
         // Push chunk name to message queue
         if let Some(chunk) = self.client.current_chunk()

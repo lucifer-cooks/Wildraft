@@ -55,6 +55,8 @@ widget_ids! {
         member_health[],
         member_health_decay[],
         member_energy[],
+        member_hunger[],
+        member_thirst[],
         buffs[],
         buff_timers[],
         dead_txt[],
@@ -316,6 +318,20 @@ impl Widget for Group<'_> {
                         .resize(group_size, &mut ui.widget_id_generator())
                 })
             };
+            if state.ids.member_hunger.len() < group_size {
+                state.update(|s| {
+                    s.ids
+                        .member_hunger
+                        .resize(group_size, &mut ui.widget_id_generator())
+                })
+            };
+            if state.ids.member_thirst.len() < group_size {
+                state.update(|s| {
+                    s.ids
+                        .member_thirst
+                        .resize(group_size, &mut ui.widget_id_generator())
+                })
+            };
             if state.ids.member_panels_frame.len() < group_size {
                 state.update(|s| {
                     s.ids
@@ -370,6 +386,8 @@ impl Widget for Group<'_> {
             let skill_sets = client_state.ecs().read_storage::<common::comp::SkillSet>();
             let healths = client_state.ecs().read_storage::<common::comp::Health>();
             let energy = client_state.ecs().read_storage::<common::comp::Energy>();
+            let hunger = client_state.ecs().read_storage::<common::comp::Hunger>();
+            let thirst = client_state.ecs().read_storage::<common::comp::Thirst>();
             let buffs = client_state.ecs().read_storage::<common::comp::Buffs>();
             let inventory = client_state.ecs().read_storage::<common::comp::Inventory>();
             let id_maps = client_state.ecs().read_resource::<IdMaps>();
@@ -528,6 +546,24 @@ impl Widget for Group<'_> {
                         .color(Some(STAMINA_COLOR))
                         .top_left_with_margins_on(state.ids.member_panels_bg[i], 26.0, 2.0)
                         .set(state.ids.member_energy[i], ui);
+                    // Hunger (survival stat bar, authoritative ECS)
+                    if let Some(h) = entity.and_then(|entity| hunger.get(entity)) {
+                        let hunger_perc = h.fraction().min(1.0);
+                        Image::new(self.imgs.bar_content)
+                            .w_h(100.0 * f64::from(hunger_perc), 8.0)
+                            .color(Some(Color::Rgba(1.0, 0.55, 0.15, 1.0)))
+                            .top_left_with_margins_on(state.ids.member_panels_bg[i], 36.0, 2.0)
+                            .set(state.ids.member_hunger[i], ui);
+                    }
+                    // Thirst (survival stat bar, authoritative ECS)
+                    if let Some(t) = entity.and_then(|entity| thirst.get(entity)) {
+                        let thirst_perc = t.fraction().min(1.0);
+                        Image::new(self.imgs.bar_content)
+                            .w_h(100.0 * f64::from(thirst_perc), 8.0)
+                            .color(Some(Color::Rgba(0.18, 0.55, 0.85, 1.0)))
+                            .top_left_with_margins_on(state.ids.member_panels_bg[i], 46.0, 2.0)
+                            .set(state.ids.member_thirst[i], ui);
+                    }
                     if let Some(buffs) = buffs {
                         let buff_icons = BuffIcon::icons_vec(buffs, stance);
                         // Limit displayed buffs to 11
