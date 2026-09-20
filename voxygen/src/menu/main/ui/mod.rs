@@ -476,6 +476,7 @@ Wishlist WILDRAFT on Steam and help support the game.\"",
                             button_style,
                             Some(Message::WishlistPopupSure),
                         ))
+                        .width(Length::Units(120))
                         .into(),
                         Space::new(Length::Units(10), Length::Units(0)).into(),
                         Container::new(neat_button(
@@ -485,6 +486,7 @@ Wishlist WILDRAFT on Steam and help support the game.\"",
                             button_style,
                             Some(Message::WishlistPopupDone),
                         ))
+                        .width(Length::Units(120))
                         .into(),
                     ])
                     .spacing(30)
