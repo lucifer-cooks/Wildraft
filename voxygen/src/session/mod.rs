@@ -127,6 +127,7 @@ pub struct SessionState {
     demo_timer_start: Option<std::time::Instant>,
     demo_ended: bool,
     demo_timer_display: Option<std::time::Duration>,
+    demo_glitch_time: f32,
 }
 
 /// Represents an active game session (i.e., the one being played).
@@ -206,6 +207,7 @@ impl SessionState {
             demo_timer_start: None,
             demo_ended: false,
             demo_timer_display: None,
+            demo_glitch_time: 0.0,
         }
     }
 
@@ -1630,18 +1632,32 @@ impl PlayState for SessionState {
 
             let mut outcomes = Vec::new();
 
+            // Advance glitch timer regardless of timer state (if demo ended, keep counting)
+            if self.demo_ended && self.demo_glitch_time < 3.0 {
+                self.demo_glitch_time += dt;
+            }
+
             // Demo timer: 30 minutes of unpaused gameplay; show remaining time in HUD
             if self.demo_timer_start.is_some() && !self.demo_ended && !global_state.paused() {
                 let elapsed = std::time::Instant::now()
                     .duration_since(self.demo_timer_start.unwrap())
                     .as_secs_f32();
-                let remaining = (30.0 * 60.0 - elapsed).max(0.0);
+                let demo_duration = 30.0 * 60.0_f32;
+                let remaining = (demo_duration - elapsed).max(0.0);
                 self.demo_timer_display = Some(std::time::Duration::from_secs_f32(remaining));
-                if elapsed >= 30.0 * 60.0 {
+                if elapsed >= demo_duration {
                     self.demo_ended = true;
                     self.demo_timer_display = Some(std::time::Duration::from_secs_f32(0.0));
-                    global_state.info_message =
-                        Some("WILDRAFT DEMO COMPLETE — 30 minutes played.".into());
+                    self.demo_glitch_time = 0.0; // start glitch sequence
+                    global_state.info_message = Some(
+                        "YOUR DEMO HAS FINISHED\nABNORMALITY DETECTED\nSHUTTING DOWN THE WORLD"
+                            .into(),
+                    );
+                    self.inputs.move_dir = Vec2::zero();
+                    self.client.borrow_mut().logout();
+                    global_state.audio.stop_all_ambience();
+                    global_state.audio.stop_all_sfx();
+                    return PlayStateResult::Pop;
                 }
             }
 
@@ -1766,6 +1782,7 @@ impl PlayState for SessionState {
                     persistence_load_error: self.metadata.skill_set_persistence_load_error,
                     key_state: &self.key_state,
                     demo_timer_remaining: self.demo_timer_display,
+                    demo_glitch_time: self.demo_glitch_time,
                 },
                 inverted_interactable_map,
             );

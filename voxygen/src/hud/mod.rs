@@ -668,6 +668,7 @@ pub struct HudInfo<'a> {
     pub persistence_load_error: Option<SkillsPersistenceError>,
     pub key_state: &'a KeyState,
     pub demo_timer_remaining: Option<std::time::Duration>,
+    pub demo_glitch_time: f32,
 }
 
 #[derive(Clone)]
@@ -1645,6 +1646,48 @@ impl Hud {
                         .color(TEXT_COLOR)
                         .mid_top_with_margin_on(ui_widgets.window, 2.0)
                         .set(self.ids.version, ui_widgets);
+                }
+
+                // Glitch overlay for demo-ending abnormality (only when glitch timer active
+                // 0-3s)
+                if info.demo_glitch_time > 0.0 && info.demo_glitch_time < 3.0 {
+                    let t = info.demo_glitch_time;
+                    // Brief background flicker/darken
+                    let bg_fade = 0.15 + 0.05 * ((t * 20.0).sin());
+                    // Centered glitch message
+                    let glitch_text =
+                        "YOUR DEMO HAS FINISHED\nABNORMALITY DETECTED\nSHUTTING DOWN THE WORLD";
+                    // Main text centered with red/white interference and slight offset
+                    let offset_x = (t * 25.0).sin() * 3.0;
+                    let offset_y = (t * 30.0).sin() * 2.0;
+                    // Ghost/duplicate offset text (subtle)
+                    Text::new(glitch_text)
+                        .mid_top_with_margin_on(ui_widgets.window, 200.0)
+                        .font_id(self.fonts.alkhemi.conrod_id)
+                        .font_size(self.fonts.alkhemi.scale(36))
+                        .color(Color::Rgba(
+                            0.6,
+                            0.05,
+                            0.05,
+                            0.7 + 0.3 * (t.sin() * 0.5 + 0.5),
+                        ))
+                        .x_y(offset_x as f64 - 2.0, offset_y as f64 + 1.0)
+                        .set(self.ids.version, ui_widgets);
+                    // Main white text with slight jitter
+                    Text::new(glitch_text)
+                        .mid_top_with_margin_on(ui_widgets.window, 200.0)
+                        .font_id(self.fonts.alkhemi.conrod_id)
+                        .font_size(self.fonts.alkhemi.scale(36))
+                        .color(Color::Rgba(0.95, 0.95, 0.95, 0.95))
+                        .x_y(offset_x as f64, offset_y as f64)
+                        .set(self.ids.version, ui_widgets);
+                    // Subtle dark overlay behind message
+                    Image::new(self.imgs.death_bg)
+                        .wh_of(ui_widgets.window)
+                        .middle_of(ui_widgets.window)
+                        .graphics_for(ui_widgets.window)
+                        .color(Some(Color::Rgba(0.05, 0.0, 0.05, bg_fade)))
+                        .set(self.ids.death_bg, ui_widgets);
                 }
 
                 // Death Frame

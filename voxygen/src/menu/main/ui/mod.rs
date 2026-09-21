@@ -666,10 +666,10 @@ Wishlist WILDRAFT on Steam and help support the game.\"",
                 events.push(Event::Quit);
             },
             Message::WishlistPopupDone => {
-                // Continue to demo / close popup
-                self.screen = Screen::Login {
-                    screen: Box::default(),
-                    error: None,
+                // Go to new world creation page and init singleplayer if not already
+                events.push(Event::InitSingleplayer);
+                self.screen = Screen::WorldSelector {
+                    screen: world_selector::Screen::default(),
                 };
             },
             Message::CancelConnect => {
