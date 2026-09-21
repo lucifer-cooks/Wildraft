@@ -1648,45 +1648,105 @@ impl Hud {
                         .set(self.ids.version, ui_widgets);
                 }
 
-                // Glitch overlay for demo-ending abnormality (only when glitch timer active
-                // 0-3s)
+                // WORLD MALFUNCTION: cinematic fullscreen glitch (not a dialog)
+                // Gameplay remains visible; screen tears with strips, flicker, ghosting
                 if info.demo_glitch_time > 0.0 && info.demo_glitch_time < 3.0 {
                     let t = info.demo_glitch_time;
-                    // Brief background flicker/darken
-                    let bg_fade = 0.15 + 0.05 * ((t * 20.0).sin());
-                    // Centered glitch message
-                    let glitch_text =
-                        "YOUR DEMO HAS FINISHED\nABNORMALITY DETECTED\nSHUTTING DOWN THE WORLD";
-                    // Main text centered with red/white interference and slight offset
-                    let offset_x = (t * 25.0).sin() * 3.0;
-                    let offset_y = (t * 30.0).sin() * 2.0;
-                    // Ghost/duplicate offset text (subtle)
-                    Text::new(glitch_text)
-                        .mid_top_with_margin_on(ui_widgets.window, 200.0)
-                        .font_id(self.fonts.alkhemi.conrod_id)
-                        .font_size(self.fonts.alkhemi.scale(36))
-                        .color(Color::Rgba(
-                            0.6,
-                            0.05,
-                            0.05,
-                            0.7 + 0.3 * (t.sin() * 0.5 + 0.5),
-                        ))
-                        .x_y(offset_x as f64 - 2.0, offset_y as f64 + 1.0)
-                        .set(self.ids.version, ui_widgets);
-                    // Main white text with slight jitter
-                    Text::new(glitch_text)
-                        .mid_top_with_margin_on(ui_widgets.window, 200.0)
-                        .font_id(self.fonts.alkhemi.conrod_id)
-                        .font_size(self.fonts.alkhemi.scale(36))
-                        .color(Color::Rgba(0.95, 0.95, 0.95, 0.95))
-                        .x_y(offset_x as f64, offset_y as f64)
-                        .set(self.ids.version, ui_widgets);
-                    // Subtle dark overlay behind message
+                    let w = ui_widgets.win_w;
+                    let h = ui_widgets.win_h;
+
+                    // FULLSCREEN dark flicker flashes (world visible behind)
+                    let flash = ((t * 35.0).sin() * 0.5 + 0.5) * (1.0 - t / 3.0);
                     Image::new(self.imgs.death_bg)
                         .wh_of(ui_widgets.window)
                         .middle_of(ui_widgets.window)
                         .graphics_for(ui_widgets.window)
-                        .color(Some(Color::Rgba(0.05, 0.0, 0.05, bg_fade)))
+                        .color(Some(Color::Rgba(0.0, 0.0, 0.0, 0.25 + 0.35 * flash)))
+                        .set(self.ids.death_bg, ui_widgets);
+
+                    // HORIZONTAL IMAGE TEARS: 7 thin strips offset horizontally
+                    for i in 0..7 {
+                        let strip_y = 100.0 + (i as f64) * (h * 0.11);
+                        let tear_x = (t * 15.0 + i as f32 * 30.0).sin() * 30.0;
+                        let tear_opacity =
+                            0.2 + 0.4 * ((t * 18.0 + i as f32 * 9.0).sin() * 0.5 + 0.5);
+                        Image::new(self.imgs.death_bg)
+                            .w_h(w, h * 0.09)
+                            .middle_of(ui_widgets.window)
+                            .y(strip_y)
+                            .x(tear_x as f64)
+                            .graphics_for(ui_widgets.window)
+                            .color(Some(Color::Rgba(0.03, 0.0, 0.02, tear_opacity)))
+                            .set(self.ids.death_bg, ui_widgets);
+                    }
+
+                    let glitch_text =
+                        "YOUR DEMO HAS FINISHED\nABNORMALITY DETECTED\nSHUTTING DOWN THE WORLD";
+
+                    // RED GHOST (left-shifted, strong)
+                    let gx_r = (t * 25.0).sin() * 8.0 + 6.0;
+                    let gy_r = (t * 20.0).sin() * 5.0 + 3.0;
+                    Text::new(glitch_text)
+                        .mid_top_with_margin_on(ui_widgets.window, 240.0)
+                        .font_id(self.fonts.alkhemi.conrod_id)
+                        .font_size(self.fonts.alkhemi.scale(46))
+                        .color(Color::Rgba(
+                            0.9,
+                            0.0,
+                            0.0,
+                            0.75 + 0.25 * ((t * 2.0).sin() * 0.5 + 0.5),
+                        ))
+                        .x_y(gx_r as f64 - 6.0, gy_r as f64 + 4.0)
+                        .set(self.ids.version, ui_widgets);
+
+                    // CYAN GHOST (right-shifted, lower opacity)
+                    let gx_c = (t * 30.0).sin() * 6.0 - 5.0;
+                    let gy_c = (t * 24.0).sin() * 4.0 - 3.0;
+                    Text::new(glitch_text)
+                        .mid_top_with_margin_on(ui_widgets.window, 240.0)
+                        .font_id(self.fonts.alkhemi.conrod_id)
+                        .font_size(self.fonts.alkhemi.scale(46))
+                        .color(Color::Rgba(
+                            0.0,
+                            0.65,
+                            0.85,
+                            0.45 + 0.25 * ((t * 1.8).sin() * 0.5 + 0.5),
+                        ))
+                        .x_y(gx_c as f64 + 5.0, gy_c as f64 - 4.0)
+                        .set(self.ids.version, ui_widgets);
+
+                    // MAIN WHITE TEXT: flickering alpha + horizontal tear displacement
+                    let alpha_main = 0.9 + 0.1 * ((t * 50.0).sin() * 0.5 + 0.5);
+                    let tear_shift = (t * 12.0).sin() * 18.0; // horizontal tear
+                    let jitter_y = (t * 28.0).sin() * 8.0;
+                    Text::new(glitch_text)
+                        .mid_top_with_margin_on(ui_widgets.window, 240.0)
+                        .font_id(self.fonts.alkhemi.conrod_id)
+                        .font_size(self.fonts.alkhemi.scale(46))
+                        .color(Color::Rgba(0.98, 0.98, 0.98, alpha_main))
+                        .x_y(tear_shift as f64, jitter_y as f64)
+                        .set(self.ids.version, ui_widgets);
+
+                    // EXTRA GHOST LAYER (faint duplicate for corruption feel)
+                    let ghost_alpha = 0.12 + 0.18 * (t.sin());
+                    Text::new(glitch_text)
+                        .mid_top_with_margin_on(ui_widgets.window, 240.0)
+                        .font_id(self.fonts.alkhemi.conrod_id)
+                        .font_size(self.fonts.alkhemi.scale(44))
+                        .color(Color::Rgba(0.85, 0.85, 0.85, ghost_alpha))
+                        .x_y(
+                            ((t * 22.0).sin() * 9.0) as f64 - 2.0,
+                            ((t * 26.0).sin() * 6.0) as f64 + 1.0,
+                        )
+                        .set(self.ids.version, ui_widgets);
+
+                    // BRIGHTNESS SNAP FLASH (brief corruption burst)
+                    let snap = if (t * 11.0).sin() > 0.88 { 0.3 } else { 0.0 };
+                    Image::new(self.imgs.death_bg)
+                        .wh_of(ui_widgets.window)
+                        .middle_of(ui_widgets.window)
+                        .graphics_for(ui_widgets.window)
+                        .color(Some(Color::Rgba(0.9, 0.9, 0.92, snap)))
                         .set(self.ids.death_bg, ui_widgets);
                 }
 
