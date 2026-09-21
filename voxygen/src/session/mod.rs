@@ -1642,7 +1642,7 @@ impl PlayState for SessionState {
                 let elapsed = std::time::Instant::now()
                     .duration_since(self.demo_timer_start.unwrap())
                     .as_secs_f32();
-                let demo_duration = 30.0 * 60.0_f32;
+                let demo_duration = 15.0_f32;
                 let remaining = (demo_duration - elapsed).max(0.0);
                 self.demo_timer_display = Some(std::time::Duration::from_secs_f32(remaining));
                 if elapsed >= demo_duration {
