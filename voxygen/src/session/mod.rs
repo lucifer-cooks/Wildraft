@@ -1642,7 +1642,7 @@ impl PlayState for SessionState {
                 let elapsed = std::time::Instant::now()
                     .duration_since(self.demo_timer_start.unwrap())
                     .as_secs_f32();
-                let demo_duration = 15.0_f32;
+                let demo_duration = 30.0 * 60.0; // 30 minutes in seconds
                 let remaining = (demo_duration - elapsed).max(0.0);
                 self.demo_timer_display = Some(std::time::Duration::from_secs_f32(remaining));
                 if elapsed >= demo_duration {
@@ -1650,14 +1650,14 @@ impl PlayState for SessionState {
                     self.demo_timer_display = Some(std::time::Duration::from_secs_f32(0.0));
                     self.demo_glitch_time = 0.0; // start glitch sequence
                     global_state.info_message = Some(
-                        "YOUR DEMO HAS FINISHED\nABNORMALITY DETECTED\nSHUTTING DOWN THE WORLD"
+                        "whislist the game on steam pls change it to join our discord server"
                             .into(),
                     );
                     self.inputs.move_dir = Vec2::zero();
                     self.client.borrow_mut().logout();
                     global_state.audio.stop_all_ambience();
                     global_state.audio.stop_all_sfx();
-                    return PlayStateResult::Pop;
+                    return PlayStateResult::Shutdown;
                 }
             }
 

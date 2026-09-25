@@ -109,19 +109,24 @@ impl Screen {
         let logo_section = Column::with_children(vec![
             // Logo at top — real image, enlarged, aspect preserved
             Image::new(imgs.logo)
-                .width(Length::Units(300)) // Increased size to 300px
+                .width(Length::Units(380)) // Increased size for visibility
                 .fix_aspect_ratio()
                 .into(),
-            Space::new(Length::Fill, Length::Units(12)).into(),
+            Space::new(Length::Fill, Length::Units(4)).into(),
         ])
         .width(Length::Fill)
         .max_width(460);
 
-        let left_column = Column::with_children(vec![logo_section.into(), buttons.into()])
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .padding(30)
-            .into();
+        // Logo moved down to sit just above Play Demo button
+        let left_column = Column::with_children(vec![
+            Space::new(Length::Fill, Length::Fill).into(),
+            logo_section.into(),
+            buttons.into(),
+        ])
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .padding(30)
+        .into();
 
         let central_content: Element<'_, Message> = if let Some(error) = error {
             Container::new(
@@ -164,27 +169,11 @@ impl Screen {
             .center_x()
             .center_y();
 
-        // Get demo info text for right side
-        let demo_time = i18n.get_msg("wildraft-demo_time");
-
-        // Right column: Steam icon placeholder + demo info
-        let right_column = Container::new(
-            Column::with_children(vec![
-                // Placeholder for Steam icon (to be replaced with actual asset)
-                Container::new(Space::new(Length::Units(40), Length::Units(40)))
-                    .width(Length::Units(40))
-                    .height(Length::Units(40))
-                    .into(),
-                Text::new(demo_time)
-                    .size(24) // Noticeably larger
-                    .into(),
-            ])
-            .spacing(12)
-            .align_items(Align::Center),
-        )
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .center_y();
+        // Right column: cleared — no visible text
+        let right_column = Container::new(Space::new(Length::Fill, Length::Fill))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_y();
 
         Row::with_children(vec![
             left_column,

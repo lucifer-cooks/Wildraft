@@ -280,12 +280,24 @@ impl Window {
             attributes = attributes.with_name("net.veloren.veloren", "veloren");
         }
 
+        // Windows application identity: class name / taskbar grouping
+        #[cfg(target_family = "windows")]
+        let mut attributes = {
+            use winit::platform::windows::WindowAttributesExtWindows;
+            attributes.with_class_name("WILDRAFT")
+        };
+
         // Avoid cpal / winit OleInitialize conflict
         // See: https://github.com/rust-windowing/winit/pull/1524
         #[cfg(target_family = "windows")]
-        let attributes = winit::platform::windows::WindowAttributesExtWindows::with_drag_and_drop(
-            attributes, false,
-        );
+        let attributes = {
+            use winit::platform::windows::WindowAttributesExtWindows;
+            let attributes =
+                winit::platform::windows::WindowAttributesExtWindows::with_drag_and_drop(
+                    attributes, false,
+                );
+            attributes
+        };
 
         #[expect(deprecated)]
         let window = Arc::new(event_loop.create_window(attributes).unwrap());

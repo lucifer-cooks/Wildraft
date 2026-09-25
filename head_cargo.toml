@@ -98,9 +98,6 @@ server = { package = "veloren-server", path = "../server", optional = true, defa
     "worldgen",
 ] }
 
-# Windows
-windows = { version = "0.58", features = ["Win32_Media_MediaFoundation", "Win32_Graphics_Direct3D", "Win32_System_Com", "Win32_Foundation"] }
-
 # CLI
 clap = { workspace = true }
 
@@ -170,11 +167,6 @@ rayon = { workspace = true }
 [[bench]]
 harness = false
 name = "meshing_benchmark"
-
-[[bin]]
-name = "veloren-voxygen"
-path = "src/main.rs"
-required-features = []
 
 [[bin]]
 name = "img_export"

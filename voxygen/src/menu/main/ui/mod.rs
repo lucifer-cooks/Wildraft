@@ -386,7 +386,7 @@ impl Controls {
             .text_color(TEXT_COLOR)
             .disabled_text_color(DISABLED_TEXT_COLOR);
 
-        let version = iced::Text::new(&self.version)
+        let version = iced::Text::new("")
             .size(self.fonts.cyri.scale(12))
             .width(Length::Fill)
             .horizontal_alignment(HorizontalAlignment::Center);
@@ -458,10 +458,9 @@ impl Controls {
                 ..
             } => {
                 let text = Text::new(
-                    "WISHLIST WILDRAFT ON STEAM
+                    "JOIN OUR DISCORD SERVER
 
-\"Enjoying what you see?
-Wishlist WILDRAFT on Steam and help support the game.\"",
+Join our Discord server at https://discord.gg/RjmFUscAeF",
                 )
                 .horizontal_alignment(iced::HorizontalAlignment::Center)
                 .size(22);
@@ -658,8 +657,8 @@ Wishlist WILDRAFT on Steam and help support the game.\"",
                 }
             },
             Message::WishlistPopupSure => {
-                // Open Steam wishlist URL
-                let url = "https://store.steampowered.com/app/123456/Wildraft";
+                // Open Discord server URL
+                let url = "https://discord.gg/RjmFUscAeF";
                 let _ = std::process::Command::new("cmd")
                     .args(["/c", "start", "", url])
                     .spawn();
