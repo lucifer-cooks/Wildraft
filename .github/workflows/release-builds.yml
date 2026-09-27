@@ -42,10 +42,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install system dependencies
         run: |
+          set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
             binutils \
+            gcc \
+            g++ \
             pkg-config \
             cmake \
             python3 \
@@ -61,10 +64,21 @@ jobs:
             libwayland-dev \
             libgtk-3-dev \
             libatk1.0-dev
-      - name: Verify linker
+      - name: Verify linker and diagnose PATH
         run: |
-          ld --version
-          cc --version
+          set -euo pipefail
+          echo "=== which ld ==="
+          which ld || true
+          echo "=== ld --version ==="
+          ld --version || true
+          echo "=== which gcc ==="
+          which gcc || true
+          echo "=== gcc --version ==="
+          gcc --version || true
+          if [ -f /usr/bin/ld ]; then
+            echo "/usr/bin/ld exists; PATH check:"
+            echo "$PATH"
+          fi
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo build --release --bin veloren-voxygen
         working-directory: .
