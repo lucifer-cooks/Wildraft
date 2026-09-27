@@ -49,6 +49,7 @@ jobs:
             binutils \
             gcc \
             g++ \
+            mold \
             pkg-config \
             cmake \
             python3 \
@@ -75,6 +76,14 @@ jobs:
           which gcc || true
           echo "=== gcc --version ==="
           gcc --version || true
+          echo "=== which mold ==="
+          which mold || true
+          echo "=== mold --version ==="
+          mold --version || true
+          echo "=== which lld ==="
+          which lld || true
+          echo "=== lld --version ==="
+          lld --version || true
           if [ -f /usr/bin/ld ]; then
             echo "/usr/bin/ld exists; PATH check:"
             echo "$PATH"
