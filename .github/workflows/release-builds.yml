@@ -1,0 +1,113 @@
+name: Cross-Platform Release Builds
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  windows:
+    name: WILDRAFT Windows x86_64
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --bin veloren-voxygen
+        working-directory: .
+      - name: Collect runtime assets
+        shell: bash
+        run: |
+          mkdir -p artifact/assets
+          cp -r assets/* artifact/assets/ 2>/dev/null || true
+          cp target/release/veloren-voxygen.exe artifact/veloren-voxygen.exe
+          echo "Assets included from root assets/; binary from target/release/"
+      - name: Package
+        run: |
+          7z a WILDRAFT-Windows-x86_64.zip artifact/veloren-voxygen.exe artifact/assets
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WILDRAFT-Windows-x86_64.zip
+          path: WILDRAFT-Windows-x86_64.zip
+          compression-level: 6
+
+  linux:
+    name: WILDRAFT Linux x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --bin veloren-voxygen
+        working-directory: .
+      - name: Collect runtime assets
+        shell: bash
+        run: |
+          mkdir -p artifact/assets
+          cp -r assets/* artifact/assets/ 2>/dev/null || true
+          cp target/release/veloren-voxygen artifact/veloren-voxygen
+      - name: Package
+        run: tar -czf WILDRAFT-Linux-x86_64.tar.gz -C artifact .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WILDRAFT-Linux-x86_64.tar.gz
+          path: WILDRAFT-Linux-x86_64.tar.gz
+          compression-level: 6
+
+  macos-x86_64:
+    name: WILDRAFT macOS x86_64
+    runs-on: macos-15-intel
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify runner architecture (must be x86_64)
+        run: uname -m
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --bin veloren-voxygen
+        working-directory: .
+      - name: Verify binary architecture before packaging
+        run: file target/release/veloren-voxygen
+      - name: Collect runtime assets
+        shell: bash
+        run: |
+          mkdir -p artifact/assets
+          cp -r assets/* artifact/assets/ 2>/dev/null || true
+          cp target/release/veloren-voxygen artifact/veloren-voxygen
+      - name: Package
+        run: tar -czf WILDRAFT-macOS-x86_64.tar.gz -C artifact .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WILDRAFT-macOS-x86_64.tar.gz
+          path: WILDRAFT-macOS-x86_64.tar.gz
+          compression-level: 6
+
+  macos-aarch64:
+    name: WILDRAFT macOS aarch64
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify runner architecture (must be arm64)
+        run: uname -m
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+      - run: rustup target add aarch64-apple-darwin
+      - run: cargo build --release --bin veloren-voxygen --target aarch64-apple-darwin
+        working-directory: .
+      - name: Verify binary architecture before packaging
+        run: file target/aarch64-apple-darwin/release/veloren-voxygen
+      - name: Collect runtime assets
+        shell: bash
+        run: |
+          mkdir -p artifact/assets
+          cp -r assets/* artifact/assets/ 2>/dev/null || true
+          cp target/aarch64-apple-darwin/release/veloren-voxygen artifact/veloren-voxygen
+      - name: Package
+        run: tar -czf WILDRAFT-macOS-aarch64.tar.gz -C artifact .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WILDRAFT-macOS-aarch64.tar.gz
+          path: WILDRAFT-macOS-aarch64.tar.gz
+          compression-level: 6
