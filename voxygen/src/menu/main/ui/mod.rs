@@ -460,7 +460,7 @@ impl Controls {
                 let text = Text::new(
                     "JOIN OUR DISCORD SERVER
 
-Join our Discord server at https://discord.gg/RjmFUscAeF",
+Join our Discord server at https://discord.gg/NwfnuXEJmJ",
                 )
                 .horizontal_alignment(iced::HorizontalAlignment::Center)
                 .size(22);
